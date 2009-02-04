@@ -1,0 +1,18 @@
+
+     citHeader("To cite package 'CHAID' in publications use:")
+     
+     desc <- packageDescription("CHAID")
+     year <- sub(".*(2[[:digit:]]{3})-.*", "\\1", desc$Date)
+     vers <- paste("R package version", desc$Version)
+     
+     citEntry(entry="Manual",
+              title = "CHAID: CHi-squared Automated Interaction Detection",
+              author = personList(as.person("The FoRt Student Project Team")),
+              year = year,
+              note = vers,
+     
+              textVersion =
+              paste("The FoRt Student Project Team (", 
+                    year,
+                    "). CHAID: CHi-squared Automated Interaction Detection ",
+                    vers, ".", sep=""))

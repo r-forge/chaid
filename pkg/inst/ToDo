@@ -1,0 +1,9 @@
+
+    o	check documentation
+
+    o	translate all comments to English
+
+    o	add checks for step 3
+
+    o	implement floating predictors
+	(what about NAs in ordered factors)

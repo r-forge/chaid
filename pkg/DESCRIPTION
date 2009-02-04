@@ -1,0 +1,21 @@
+Package: CHAID
+Type: Package
+Title: CHi-squared Automated Interaction Detection
+Version: 0.1-0
+Date: 2009-02-04
+Author: The FoRt Student Project Team
+Maintainer: Torsten Hothorn <Torsten.Hothorn@R-project.org>
+Description: This package offers an implementation of CHAID, a type of decision tree
+  technique for a nominal scaled dependent variable published in 1980 by Gordon 
+  V. Kass. CHAID stands for Chi-squared Automated Interaction Detection and 
+  detects interactions between categorized variables of a data set, one of which
+  is the dependent variable. The remaining variables may or may not be ordered.
+  An algorithm for recursive partitioning is implemented, based on maximizing the
+  significance of a chi-squared statistic for cross-tabulations between the
+  dependent variable and the predictors at each partition. The data are
+  partitioned into mutually exclusive, exhaustive subsets that best describe the
+  dependent variable. Multiway splits are used by default.
+Depends: partykit
+License: GPL-2
+LazyLoad: yes
+LazyData: yes
