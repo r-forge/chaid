@@ -8,7 +8,7 @@
 }
 \usage{data("USvote")}
 \format{
-  A data frame with 2000 observations on the following 6 variables.
+  A data frame with 10645 observations on the following 6 variables.
   \describe{
     \item{\code{vote3}}{candidate voted for \code{Gore} or \code{Bush}}
     \item{\code{gender}}{gender, a factor with levels \code{male} and \code{female}}
