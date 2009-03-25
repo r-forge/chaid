@@ -289,6 +289,9 @@ step5 <- function(id = 1L, response, x, weights = NULL, indices = NULL,
     if (sum(weights) < ctrl$minsplit) 
         return(partynode(id = id))
 
+    if (ctrl$stump && id > 1)
+        return(partynode(id = id))
+
     indices <- step1(response, x, weights, indices = indices, ctrl)
 
     logpvals <- step4(response, x, weights, indices)
@@ -322,10 +325,11 @@ step5 <- function(id = 1L, response, x, weights = NULL, indices = NULL,
 }
 
 chaid_control <- function(alpha2 = 0.05, alpha3 = -1, alpha4 = 0.05,
-                          minsplit = 20, minbucket = 7, minprob = 0.01) {
+                          minsplit = 20, minbucket = 7, minprob = 0.01, stump = FALSE) {
 
     ret <- list(alpha2 = alpha2, alpha3 = alpha3, alpha4 = alpha4,
-         minsplit = minsplit, minbucket = minbucket, minprob = minprob)
+         minsplit = minsplit, minbucket = minbucket, minprob = minprob,
+         stump = stump)
     class(ret) <- "chaid_control"
     return(ret)
 }

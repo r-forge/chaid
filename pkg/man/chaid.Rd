@@ -9,7 +9,8 @@
 chaid(formula, data, subset, weights, na.action = na.omit, 
       control = chaid_control())
 chaid_control(alpha2 = 0.05, alpha3 = -1, alpha4 = 0.05,
-              minsplit = 20, minbucket = 7, minprob = 0.01)
+              minsplit = 20, minbucket = 7, minprob = 0.01,
+              stump = FALSE)
 }
 \arguments{
   \item{formula}{an object of class \code{formula} 
@@ -38,6 +39,7 @@ chaid_control(alpha2 = 0.05, alpha3 = -1, alpha4 = 0.05,
   \item{minsplit}{Number of observations in splitted response at which no further split is desired.}
   \item{minbucket}{Minimum number of observations in terminal nodes.}
   \item{minprob}{Mininimum frequency of observations in terminal nodes.}
+  \item{stump}{only root node splits are performed.}
 }
 \details{
 
