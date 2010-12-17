@@ -81,8 +81,7 @@ mergex <- function(x, index) {
         ### merge levels itself
         newlev[i] <- paste(lev[indx], collapse = "+")
     }
-    if (is.ordered(x)) return(ordered(chrx, levels = newlev))
-    return(factor(chrx, levels = newlev))
+    return(factor(chrx, levels = newlev, ordered=is.ordered(x)))
 }
 
 step1internal <- function(response, x, weights, index = NULL, ctrl) {
@@ -161,15 +160,14 @@ step2 <- function(response, x, weights, index = 1:nlevels(x), ctrl) {
                 levindx <- c(i, j)
             }
         }
-     }
+    }
 
-     ### sample size stopping criteria
-     nmin <- min(c(ceiling(ctrl$minprob * sum(weights)), ctrl$minbucket))
+    ### sample size stopping criteria
+    nmin <- min(c(ceiling(ctrl$minprob * sum(weights)), ctrl$minbucket))
 
-     if (exp(logpmax) > ctrl$alpha2 || 
-         any(rowSums(xytab[levindx,]) < nmin))
-         return(levindx)
-     return(NULL)
+    if (exp(logpmax) > ctrl$alpha2 || any(rowSums(xytab) < nmin))
+        return(levindx)
+    return(NULL)
 }
 
 step3 <- function(x, y, weights, alpha3 = 0.049, index, kat) {
@@ -232,6 +230,9 @@ step4internal <- function(response, x, weights, index) {
 
     if (nlevels(response[, drop = TRUE]) < 2) return(0)
     mx <- mergex(x, index)
+    nmin <- min(c(ceiling(ctrl$minprob * sum(weights)), ctrl$minbucket))
+    if (any(table(mx[weights > 0]) < nmin)) return(0)
+
     c_levels <- nlevels(x[weights > 0, drop = TRUE])
     r_levels <- nlevels(mx)
     xytab <- xtabs(weights ~ response + mx)
