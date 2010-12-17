@@ -92,14 +92,16 @@ step1internal <- function(response, x, weights, index = NULL, ctrl) {
     stopifnot(is.factor(x))
     if (is.null(index))
         index <- 1:nlevels(x)
-
+    state <- NULL
     while(TRUE) {
 
          ### nothing to do for two categories
          if (max(index) == 2) break()
 
          ### merge levels
-         mlev <- step2(response, x, weights, index, ctrl)
+         result <- step2(response, x, weights, index, ctrl, state)
+         mlev <- result$mlev
+         state <- result$state
 
          ### nothing to merge, return index
          if (is.null(mlev)) break()
@@ -115,9 +117,12 @@ step1internal <- function(response, x, weights, index = NULL, ctrl) {
          kat <- unique(index[kati])
 
          ### perform step 3 if necessary
-         if (runstep3)
+         if (runstep3) {
              index <- step3(response, x, weights, index, alpha3 = alpha3, kat)
+             state <- NULL
+         }
     }
+    attr(index, "state") <- state
     return(index)
 }
 
@@ -130,43 +135,56 @@ step1 <- function(response, xvars, weights, indices = NULL, ctrl) {
 }
 
 
-step2 <- function(response, x, weights, index = 1:nlevels(x), ctrl) {
-
+step2 <- function(response, x, weights, index = 1:nlevels(x), ctrl, state=NULL) {
     stopifnot(is.factor(response))
     stopifnot(is.factor(x))
     if (nlevels(response[, drop = TRUE]) < 2) return(NULL)
 
-    x <- mergex(x, index)
-    if (nlevels(x[, drop = TRUE]) < 3) return(NULL)
+    if (is.null(state)) {
+        mergedx <- x
+        if (nlevels(mergedx[, drop = TRUE]) < 3) return(NULL)
+        xytab <- xtabs(weights ~ mergedx + response)
+        logpmaxs <- matrix(NA, nrow=nrow(xytab), ncol=nrow(xytab))
+    }
+    else {
+        xytab <- state$xytab
+        mergedx <- state$mergedx
+        logpmaxs <- state$logpmaxs
+    }
 
-    xlev <- levels(x)
-    xclass <- class(x)[1]
-    xytab <- xtabs(weights ~ x + response)
-
-    comb <- switch(xclass, 
-        "factor" = lapply(1:(nlevels(x) - 1), function(i) (i + 1):nlevels(x)),
-        "ordered" = lapply(1:(nlevels(x) - 1), function(i) i + 1),
+    comb <- switch(class(mergedx)[1], 
+        "factor" = lapply(1:(nlevels(mergedx) - 1), function(i) (i + 1):nlevels(mergedx)),
+        "ordered" = lapply(1:(nlevels(mergedx) - 1), function(i) i + 1),
         stop("unknown class")
     )
 
-    logpmax <- -Inf
-    levindx <- c(NA, NA)
     for (i in 1:length(comb)) {
         for (j in comb[[i]]) {
-            X <- xytab[c(i, j), ]
-            logp <- logchisq.test(X)
-            if (logp > logpmax) {
-                logpmax <- logp
-                levindx <- c(i, j)
+            if (is.na(logpmaxs[i, j])) {
+                X <- xytab[c(i, j), ]
+                logpmaxs[i, j] <- logchisq.test(X)
             }
         }
     }
+    logpmax <- max(logpmaxs, na.rm=TRUE)
+    pos <- which.max(logpmaxs)
+    levindx <- c(pos %% nrow(logpmaxs), as.integer(pos / nrow(logpmaxs)) + 1)
 
     ### sample size stopping criteria
     nmin <- min(c(ceiling(ctrl$minprob * sum(weights)), ctrl$minbucket))
 
-    if (exp(logpmax) > ctrl$alpha2 || any(rowSums(xytab) < nmin))
-        return(levindx)
+    if (exp(logpmax) > ctrl$alpha2 || any(rowSums(xytab) < nmin)) {
+        xytab[min(levindx),] <- colSums(xytab[levindx,])
+        mergedx[mergedx==rownames(xytab)[max(levindx)]] <- rownames(xytab)[min(levindx)]
+        xytab <- xytab[-max(levindx),]
+        mergedx <- factor(mergedx, levels=rownames(xytab),
+            ordered=is.ordered(mergedx))
+        logpmaxs[levindx,] <- NA
+        logpmaxs[,levindx] <- NA        
+        logpmaxs <- logpmaxs[-min(levindx), -max(levindx)]
+        return(list(mlev=levindx, state=list(xytab=xytab, mergedx=mergedx,
+            logpmaxs=logpmaxs)))
+    }
     return(NULL)
 }
 
@@ -226,22 +244,30 @@ step3intern <- function(x, y, weights, alpha3=0.05, index, kat){
     return(list(logp = logp_min, split = which(levels(x) %in% splitlev)))
 }
 
-step4internal <- function(response, x, weights, index) {
+step4internal <- function(response, x, weights, index, ctrl) {
 
     if (nlevels(response[, drop = TRUE]) < 2) return(0)
-    mx <- mergex(x, index)
+    state <- attr(index, "state")
+    if (is.null(state))
+        mx <- mergex(x, index)
+    else
+        mx <- state$mergedx
+
     nmin <- min(c(ceiling(ctrl$minprob * sum(weights)), ctrl$minbucket))
     if (any(table(mx[weights > 0]) < nmin)) return(0)
 
     c_levels <- nlevels(x[weights > 0, drop = TRUE])
     r_levels <- nlevels(mx)
-    xytab <- xtabs(weights ~ response + mx)
 
-    ### FIXME: better in logchisq.test???
-    if (sum(colSums(xytab) > 0) < 2) return(0)
+    if (is.null(state))
+        xytab <- xtabs(weights ~ response + mx)
+    else
+        xytab <- state$xytab
 
     ### p-value on log-scale!
-    logp <- logchisq.test(xytab)	
+    logp <- logchisq.test(xytab)
+
+    if (logp == 0) return(0)
 
     if (is.ordered(x)) {
         ### formula (3.1) in Kass (1980)
@@ -256,12 +282,12 @@ step4internal <- function(response, x, weights, index) {
     return(ret)
 }
 
-step4 <- function(response, xvars, weights, indices) {
-
+step4 <- function(response, xvars, weights, indices, ctrl, states) {
+    states <- attr(indices, "states")
     p <- numeric(length(xvars))
     X2 <- rep(NA, length(xvars))
     for (i in 1:length(xvars)) {
-        tmp <- step4internal(response, xvars[[i]], weights, indices[[i]])
+        tmp <- step4internal(response, xvars[[i]], weights, indices[[i]], ctrl)
         p[i] <- tmp
         if (!is.null(attr(tmp, "Chisq")))
             X2[i] <- attr(tmp, "Chisq")
@@ -283,7 +309,7 @@ step5 <- function(id = 1L, response, x, weights = NULL, indices = NULL,
 
     indices <- step1(response, x, weights, indices = indices, ctrl)
 
-    logpvals <- step4(response, x, weights, indices)
+    logpvals <- step4(response, x, weights, indices, ctrl)
     info <- list(adjpvals = exp(logpvals))
 
     if (exp(min(logpvals)) > ctrl$alpha4) return(partynode(id = id, info = info))

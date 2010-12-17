@@ -16,6 +16,6 @@ stopifnot(!is.null(levindx))
 
 # Here it should return 0, not allowing us to select this variable for
 # a split, because it would result in a small bucket.
-logpval <- step4internal(response, x, weights, index)
+logpval <- step4internal(response, x, weights, index, ctrl)
 stopifnot(logpval == 0)
 
