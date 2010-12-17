@@ -186,58 +186,46 @@ step3 <- function(x, y, weights, alpha3 = 0.049, index, kat) {
 }
 
 step3intern <- function(x, y, weights, alpha3=0.05, index, kat){
-
-           ### determine all admissible combinations
-           foo <- function(nll) {
-                   if (is.ordered(x)){
-                    
-                      ret<-matrix(FALSE,ncol=nll,nrow=nll-1)
-                      for(i in 1:(nll-1)) {
-                      for(j in 1:(nll-1))  {
-                      if(i<=j){
-                      ret[j,i]<-TRUE}}}}
-   
-                    else{
-                      indl <- rep(FALSE, nll)
-                      indl[1] <- TRUE
-
-                      mi <- 2^(nll - 1)
-                      ret <- matrix(FALSE, ncol = nll, nrow = mi - 1)
-
-                      for (i in 1:(mi - 1)) {
-                          ii <- i
-                          for(l in 1:(nll-1)) {
-                              indl[l] <- as.logical(ii%%2)
-                              ii <- ii %/% 2
-                      }
-                     ret[i,] <- indl
-                  } }
-                  return(ret)
-              }
-
-              subsetx <- x %in% levels(x)[index == kat]
-              ytmp <- y[subsetx, drop = TRUE]
-              xtmp <- x[subsetx, drop = TRUE]
-              wtmp <- weights[subsetx]
-              xlev <- levels(xtmp)
-              ret <- foo(nlevels(xtmp))
-
-              logp <- numeric(nrow(ret))
-
-              for (i in 1:nrow(ret)){
-
-                  tmpx <- as.factor(xtmp %in% xlev[ret[i, ]])
-                  mat <- xtabs(wtmp ~ tmpx + ytmp)
-
-                  logp[i] <- logchisq.test(mat)
-              }
-
-              logp_min <- min(logp)
-              if (exp(logp_min) > alpha3) return(NULL)
-
-              splitlev <- xlev[ret[which.min(logp),]]
-              return(list(logp = logp_min, split = which(levels(x) %in% splitlev)))
-
+    ### determine all admissible combinations
+    foo <- function(nll) {
+        if (is.ordered(x)){
+            ret<-matrix(FALSE,ncol=nll,nrow=nll-1)
+            for(i in 1:(nll-1)) {
+            for(j in 1:(nll-1))  {
+            if(i<=j){
+            ret[j,i]<-TRUE}}}}
+        else{
+            indl <- rep(FALSE, nll)
+            indl[1] <- TRUE
+            mi <- 2^(nll - 1)
+            ret <- matrix(FALSE, ncol = nll, nrow = mi - 1)
+            for (i in 1:(mi - 1)) {
+                ii <- i
+                for(l in 1:(nll-1)) {
+                    indl[l] <- as.logical(ii%%2)
+                    ii <- ii %/% 2
+                }
+                ret[i,] <- indl
+            }
+        }
+        return(ret)
+    }
+    subsetx <- x %in% levels(x)[index == kat]
+    ytmp <- y[subsetx, drop = TRUE]
+    xtmp <- x[subsetx, drop = TRUE]
+    wtmp <- weights[subsetx]
+    xlev <- levels(xtmp)
+    ret <- foo(nlevels(xtmp))
+    logp <- numeric(nrow(ret))
+    for (i in 1:nrow(ret)){
+        tmpx <- as.factor(xtmp %in% xlev[ret[i, ]])
+        mat <- xtabs(wtmp ~ tmpx + ytmp)
+        logp[i] <- logchisq.test(mat)
+    }
+    logp_min <- min(logp)
+    if (exp(logp_min) > alpha3) return(NULL)
+    splitlev <- xlev[ret[which.min(logp),]]
+    return(list(logp = logp_min, split = which(levels(x) %in% splitlev)))
 }
 
 step4internal <- function(response, x, weights, index) {
