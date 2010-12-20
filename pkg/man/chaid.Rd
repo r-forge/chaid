@@ -10,7 +10,7 @@ chaid(formula, data, subset, weights, na.action = na.omit,
       control = chaid_control())
 chaid_control(alpha2 = 0.05, alpha3 = -1, alpha4 = 0.05,
               minsplit = 20, minbucket = 7, minprob = 0.01,
-              stump = FALSE)
+              stump = FALSE, maxheight = -1)
 }
 \arguments{
   \item{formula}{an object of class \code{formula} 
@@ -40,6 +40,7 @@ chaid_control(alpha2 = 0.05, alpha3 = -1, alpha4 = 0.05,
   \item{minbucket}{Minimum number of observations in terminal nodes.}
   \item{minprob}{Mininimum frequency of observations in terminal nodes.}
   \item{stump}{only root node splits are performed.}
+  \item{maxheight}{Maximum height for the tree.}
 }
 \details{
 
@@ -101,7 +102,7 @@ e) If the split of a node results in a child node whose node size is less than t
 minimum child node size value, child nodes that have too few cases (as compared with this
 minimum) will merge with the most similar child node as measured by the largest of the p-values.
 However, if the resulting number of child nodes is 1, the node will not be split.
-
+f) If the trees height is a positive value and equals the maxheight.
 }
 \value{
   An object of class \code{constparty}, see package 
