@@ -1,7 +1,7 @@
 Package: CHAID
 Type: Package
 Title: CHi-squared Automated Interaction Detection
-Version: 0.1-0
+Version: 0.1-1
 Date: 2009-02-04
 Author: The FoRt Student Project Team
 Maintainer: Torsten Hothorn <Torsten.Hothorn@R-project.org>
@@ -15,7 +15,7 @@ Description: This package offers an implementation of CHAID, a type of decision 
   dependent variable and the predictors at each partition. The data are
   partitioned into mutually exclusive, exhaustive subsets that best describe the
   dependent variable. Multiway splits are used by default.
-Depends: partykit
+Depends: R (>= 2.10.0), partykit
 License: GPL-2
 LazyLoad: yes
 LazyData: yes

@@ -25,7 +25,7 @@ logchisq.test <- function(x) {
         suppressWarnings(ctest <- chisq.test(x[rs, cs], correct = FALSE))
         X2 <- ctest$statistic
         df <- ctest$parameter
-        ret <- pchisq(X2, df = df, lower = FALSE, log.p = TRUE)
+        ret <- pchisq(X2, df = df, lower.tail = FALSE, log.p = TRUE)
     }
     attr(ret, "Chisq") <- X2
     ret
