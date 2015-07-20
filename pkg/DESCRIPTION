@@ -1,9 +1,9 @@
 Package: CHAID
 Title: CHi-squared Automated Interaction Detection
-Version: 0.1-1
-Date: 2009-02-04
-Author: The FoRt Student Project Team
-Maintainer: Torsten Hothorn <Torsten.Hothorn@R-project.org>
+Version: 0.1-2
+Date: 2015-07-20
+Author: The FoRt Student Project Team 2009 and Torsten Hothorn
+Maintainer: Anjana K V <anjanakv10@gmail.com>
 Description: This package offers an implementation of CHAID, a type of decision tree
   technique for a nominal scaled dependent variable published in 1980 by Gordon 
   V. Kass. CHAID stands for Chi-squared Automated Interaction Detection and 
